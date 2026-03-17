@@ -144,7 +144,7 @@ var lineColor="rgb(255,255,50)"
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
           if(useLines)
-          {
+          { if(tree.length>0)
           console.log("TREE UPDATED",tree);
           for(let line of tree)
           {
@@ -153,6 +153,7 @@ var lineColor="rgb(255,255,50)"
           }
       }
     const API = document.querySelector(".container").__vue__;
+
     function updateTree()
       {
           //  console.log("UPDATE TREE",tree,IC.getInstances());
@@ -325,7 +326,7 @@ let mouseY = 0;
 					else {
 						displayParents_container.classList.add('setting');
 						displayParents_container.classList.add("modal-tab-wrapper");
-						displayParents_container.setAttribute("data-v-885fff84", "");
+						displayParents_container.setAttribute("data-v-525e958a", "");
 						displayParents_container.classList.add('display_parents_settings_cont');
 
 					}
@@ -336,15 +337,15 @@ let mouseY = 0;
 
 
 					title.classList.add("modal-tab");
-					title.setAttribute("data-v-885fff84", "");
+					title.setAttribute("data-v-525e958a", "");
 					var textSpacer = document.createElement("div");
 					var textDiv = document.createElement("div");
 					textDiv.classList.add("modal-tab-text");
 					textDiv.textContent = "Display parents";
-					textDiv.setAttribute("data-v-885fff84", "");
+					textDiv.setAttribute("data-v-525e958a", "");
 					textSpacer.textContent = "/";
 					textSpacer.classList.add('spacer');
-					textSpacer.setAttribute("data-v-885fff84", "");
+					textSpacer.setAttribute("data-v-525e958a", "");
 					displayParents_container.appendChild(textSpacer);
 					title.appendChild(textDiv);
 
@@ -355,15 +356,9 @@ let mouseY = 0;
 
 					title.addEventListener("click", () => {
 
-						while (parentElement.children[1].children.length > 1)
-							parentElement.children[1].removeChild(parentElement.children[1].lastChild);
-						if (parentElement.children[1].lastChild && parentElement.children[1].lastChild.style) {
-							parentElement.children[1].lastChild.style.display = "none";
-						} else
-							if (parentElement.children[1].lastChild) {
-								parentElement.children[1].children[0].style.display = "none";
-							}
-
+				        parentElement.children[2].style.display="none";
+                        var selected=document.querySelectorAll(".modal-tab-selected");
+                        selected.forEach(x=>x.classList.remove("modal-tab-selected"));
 						title.classList.add("modal-tab-selected");
 
 						var titleTabs = document.querySelector(".modal-tabs");
@@ -382,11 +377,18 @@ let mouseY = 0;
                    content.innerHTML = "";
                 }
 
-						for (var tab of titleTabs.children) {
+						for (let tab of titleTabs.children) {
+
 
 							if (tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent != title.textContent) {
 								tab.querySelector(".modal-tab").addEventListener("click", () => {
-
+                                  if(tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Saves" ||
+                                   tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Controls" ||
+                                   tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="About")
+                                {
+                                      tab.querySelector(".modal-tab").classList.add("modal-tab-selected");
+                                      parentElement.children[2].style.display="block";
+                                }
 									title.classList.remove("modal-tab-selected");
 									if (parentElement.contains(content)) {
 										parentElement.removeChild(content);
@@ -711,20 +713,19 @@ let mouseY = 0;
       if(useLines)
       {let wheelTimeout;
       window.addEventListener("wheel", (event) => {
-                   console.log("WHEEL");
+    
                                   updateTree();
                                   reDrawTree();
-             setTimeout(()=>{console.log("AFTER WHEEL");
+             setTimeout(()=>{
                                   updateTree();
                                   reDrawTree();
                             },10);
-
         });
        window.addEventListener("touchmove", (event) => {
-                   console.log("WHEEL");
+                 
                                   updateTree();
                                   reDrawTree();
-             setTimeout(()=>{console.log("AFTER WHEEL");
+             setTimeout(()=>{
                                   updateTree();
                                   reDrawTree();
                             },10);
