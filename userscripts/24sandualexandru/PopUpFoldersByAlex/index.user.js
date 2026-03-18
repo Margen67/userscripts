@@ -1176,8 +1176,8 @@ initTheAlphabeth();
   FoldersImage.style.position="absolute";
    FoldersImage.style.height="50px";
    FoldersImage.style.width="50px";
-   FoldersImage.style.bottom="5px";
-   FoldersImage.style.left="100px";
+   FoldersImage.style.bottom="50px";
+   FoldersImage.style.left="20px";
   parentF.appendChild(FoldersImage);
 
 
