@@ -94,7 +94,7 @@ clone.style.filter="";
 					else {
 						cleanerSettings_container.classList.add('setting');
 						cleanerSettings_container.classList.add("modal-tab-wrapper");
-						cleanerSettings_container.setAttribute("data-v-885fff84", "");
+						cleanerSettings_container.setAttribute("data-v-525e958a", "");
 						cleanerSettings_container.classList.add("folder_settings_cont");
 						ParentSource = settings;
 					}
@@ -105,15 +105,15 @@ clone.style.filter="";
 
 
 					title.classList.add("modal-tab");
-					title.setAttribute("data-v-885fff84", "");
+					title.setAttribute("data-v-525e958a", "");
 					var textSpacer = document.createElement("div");
 					var textDiv = document.createElement("div");
 					textDiv.classList.add("modal-tab-text");
 					textDiv.textContent = "Instances Cleaner";
-					textDiv.setAttribute("data-v-885fff84", "");
+					textDiv.setAttribute("data-v-525e958a", "");
 					textSpacer.textContent = "/";
 					textSpacer.classList.add('spacer');
-					textSpacer.setAttribute("data-v-885fff84", "");
+					textSpacer.setAttribute("data-v-525e958a", "");
 					cleanerSettings_container.appendChild(textSpacer);
 					title.appendChild(textDiv);
 
@@ -124,15 +124,9 @@ clone.style.filter="";
 
 					title.addEventListener("click", () => {
 
-						while (parentElement.children[1].children.length > 1)
-							parentElement.children[1].removeChild(parentElement.children[1].lastChild);
-						if (parentElement.children[1].lastChild && parentElement.children[1].lastChild.style) {
-							parentElement.children[1].lastChild.style.display = "none";
-						} else
-							if (parentElement.children[1].lastChild) {
-								parentElement.children[1].children[0].style.display = "none";
-							}
-
+		                parentElement.children[2].style.display="none";
+                        var selected=document.querySelectorAll(".modal-tab-selected");
+                        selected.forEach(x=>x.classList.remove("modal-tab-selected"));
 						title.classList.add("modal-tab-selected");
 
 						var titleTabs = document.querySelector(".modal-tabs");
@@ -151,11 +145,19 @@ clone.style.filter="";
                    content.innerHTML = "";
                 }
 
-						for (var tab of titleTabs.children) {
+						for (let tab of titleTabs.children) {
+
 
 							if (tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent != title.textContent) {
 								tab.querySelector(".modal-tab").addEventListener("click", () => {
 
+                                if(tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Saves" ||
+                                   tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Controls" ||
+                                   tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="About")
+                                    {
+                                      tab.querySelector(".modal-tab").classList.add("modal-tab-selected");
+                                      parentElement.children[2].style.display="block";
+                                      }
 									title.classList.remove("modal-tab-selected");
 									if (parentElement.contains(content)) {
 										parentElement.removeChild(content);

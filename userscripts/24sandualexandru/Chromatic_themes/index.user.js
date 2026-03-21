@@ -1,23 +1,23 @@
-
 // ==UserScript==
-       // @name        Chromatic Themes Changing Colors and Sparkles v300+
-       // @namespace   Violentmonkey Scripts
-       // @match       https://neal.fun/infinite-craft/*
-       // @grant       none
-       // @run-at	document-end
-       // @require 	https://unpkg.com/wanakana
-       // @require https://raw.githubusercontent.com/surferseo/intl-segmenter-polyfill/master/dist/bundled.js
-       // @version     1.0
-       // @author      Alexander_Andercou
-       // @description 4/29/2024, 7:40:08 AM
-       // ==/UserScript==
+// @name        Chromatic Themes Changing Colors and Sparkles v400+
+// @namespace   Violentmonkey Scripts
+// @match       https://neal.fun/infinite-craft/*
+// @grant       unsafeWindow
+// @run-at	document-end
+// @require 	https://unpkg.com/wanakana
+// @require https://raw.githubusercontent.com/surferseo/intl-segmenter-polyfill/master/dist/bundled.js
+// @version     1.0
+// @author      Alexander_Andercou
+// @description 4/29/2024, 7:40:08 AM
+// ==/UserScript==
       (function() {
         var EMOJIS      = {}
-
+        var EMOJIS_GRADIENTS      = {}
 
         let modes       = ["None","Emoji simple","Emoji gradient","Emoji blend","One color",
                            "Saved Color","Reset Colors","Test","Soup Alphabeth","Moving Gradients","Changing colors",
                            "Adjust animation speed","FD's settings","Change Background Theme",
+                           "Change color when moving","[Border]"
                           ];
         let mode        = 1;
         let fdText=true,fdSparkle=true;
@@ -33,7 +33,7 @@
         let oneColor    = window.getComputedStyle(document.querySelector(".container")).getPropertyValue("--border-color").trim();
         let sparkleCss=`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cpath fill='%23FFAC33' d='M34.347 16.893l-8.899-3.294-3.323-10.891c-.128-.42-.517-.708-.956-.708-.439 0-.828.288-.956.708l-3.322 10.891-8.9 3.294c-.393.146-.653.519-.653.938 0 .418.26.793.653.938l8.895 3.293 3.324 11.223c.126.424.516.715.959.715.442 0 .833-.291.959-.716l3.324-11.223 8.896-3.293c.391-.144.652-.518.652-.937 0-.418-.261-.792-.653-.938z'/%3E%3Cpath fill='%23FFCC4D' d='M14.347 27.894l-2.314-.856-.9-3.3c-.118-.436-.513-.738-.964-.738-.451 0-.846.302-.965.737l-.9 3.3-2.313.856c-.393.145-.653.52-.653.938 0 .418.26.793.653.938l2.301.853.907 3.622c.112.444.511.756.97.756.459 0 .858-.312.97-.757l.907-3.622 2.301-.853c.393-.144.653-.519.653-.937 0-.418-.26-.793-.653-.937zM10.009 6.231l-2.364-.875-.876-2.365c-.145-.393-.519-.653-.938-.653-.418 0-.792.26-.938.653l-.875 2.365-2.365.875c-.393.146-.653.52-.653.938 0 .418.26.793.653.938l2.365.875.875 2.365c.146.393.52.653.938.653.418 0 .792-.26.938-.653l.875-2.365 2.365-.875c.393-.146.653-.52.653-.938 0-.418-.26-.792-.653-.938z'/%3E%3C/svg%3E")`;
 
-        LetterColors={ 'A': [0, 127, 255],'B':[139,69,19],'C':[220, 20, 60],'D':[240, 225, 48],
+      let  LetterColors={ 'A': [0, 127, 255],'B':[139,69,19],'C':[220, 20, 60],'D':[240, 225, 48],
                       'E': [ 80, 200, 120], 'F': [217,2,125],    'G': [128,128,128],     'H': [223, 115, 255],
                       'I': [75,0,130],      'J': [	0, 168, 107], 'K': [ 	195, 176, 145], 'L': [220,208,255],
                       'M': [255,0,144],     'N': [0,0,128],      'O': [255, 165, 0],     'P': [160, 32, 240],
@@ -44,7 +44,7 @@
 
 
 
-        LetterColorsLight={ 'A': [0, 127, 255],'B':[139,69,19],'C':[220, 20, 60],'D':[240, 225, 48],
+     let   LetterColorsLight={ 'A': [0, 127, 255],'B':[139,69,19],'C':[220, 20, 60],'D':[240, 225, 48],
                       'E': [ 80, 200, 120], 'F': [217,2,125],    'G': [128,128,128],     'H': [223, 115, 255],
                       'I': [75,0,130],      'J': [	0, 168, 107], 'K': [ 	195, 176, 145], 'L': [220,208,255],
                       'M': [255,0,144],     'N': [0,0,128],      'O': [255, 165, 0],     'P': [160, 32, 240],
@@ -53,8 +53,13 @@
                       'Y': [255,255,0],     'Z': [0, 20, 168]
                       };
 
-
-
+function rgbToHsl(r, g, b) { r /= 255; g /= 255; b /= 255; const max = Math.max(r, g, b); const min = Math.min(r, g, b); let h, s; const l = (max + min) / 2; if (max === min) { h = 0; s = 0; } else { const d = max - min; s = d / (1 - Math.abs(2 * l - 1)); switch (max) { case r: h = ((g - b) / d) % 6; break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; } h *= 60; if (h < 0) h += 360; } return { h, s, l }; }
+function hslToRgb(h, s, l) {
+                            const k = n => (n + h / 30) % 12;
+                            const a = s * Math.min(l, 1 - l);
+                            const f = n => l - a * Math.max(-1, Math.min(k(n) - 3,
+                            Math.min(9 - k(n), 1)));
+                            return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) }; }
 
           function getAvgHex(color, total){
           return Math.round(color / total)
@@ -74,7 +79,119 @@
 
         }
 
+function calculatedTopColorsGradient(emoji, topN = 10) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 32;
+  canvas.height = 32;
+  ctx.font = "30px Arial";
+  ctx.fillText(emoji, 0, 28);
 
+  const { data } = ctx.getImageData(0, 0, 32, 32);
+
+  const colorMap = new Map();
+
+  let totalVisible = 0;
+  let blackCount = 0;
+    console.log("Data total",data);
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const a = data[i + 3];
+    console.log("Data invisible and visible:",r,g,b,a);
+
+    if (a < 20) continue; // ignore transparent pixels
+    totalVisible++;
+
+    // ---- Detect black-ish pixels BEFORE filtering ----
+    const brightness = Math.max(r, g, b);
+
+    // ---- FILTER OUT GRAY / NOISE ----
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const L = (max + min) / 2;
+    const denom = 1 - Math.abs(2 * L - 255) / 255;
+    const saturation = (max === 0 ? 0 : ((max - min) / 255) / denom);
+
+    console.log("Data:",r,g,b,brightness,saturation);
+
+     if (brightness < 60) {
+      blackCount++
+      continue; // still skip them for now
+    }
+
+    // Remove gray-ish colors (low saturation)
+    if (saturation < 0.70 && brightness < 230) continue;
+
+    const key = `${r},${g},${b}`;
+    colorMap.set(key, (colorMap.get(key) || 0) + 1);
+  }
+
+  // ---- If black is >50% of visible pixels, add it back ----
+
+  if (totalVisible > 0 && blackCount / totalVisible > 0.5) {
+    const blackKey = "0,0,0";
+    colorMap.set(blackKey, blackCount);
+  }
+  if (totalVisible > 0 && blackCount / totalVisible ==1) {
+    const whiteKey = "255,255,255";
+    colorMap.set(whiteKey, blackCount);
+  }
+  const sorted = [...colorMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([rgb]) => `rgb(${rgb})`);
+
+  if (sorted.length === 0) {
+    return {
+      border: "linear-gradient(135deg, #ffffff, #cccccc)",
+      ambient: "linear-gradient(135deg, rgba(255,255,255,0.75), rgba(204,204,204,0.75))"
+    };
+  }
+
+  const borderStops = sorted
+    .map((c, i) => `${c} ${(i / (sorted.length - 1)) * 100}%`)
+    .join(", ");
+
+  const ambientStops = sorted
+    .map((c, i) => {
+      const rgba = c.replace("rgb(", "rgba(").replace(")", ",0.5)");
+      return `${rgba} ${(i / (sorted.length - 1)) * 100}%`;
+    })
+    .join(", ");
+
+  return {
+    border: `linear-gradient(135deg, ${borderStops})`,
+    ambient: `linear-gradient(135deg, ${ambientStops})`
+  };
+}
+function ensureCSS() {
+    if (document.getElementById("emojiBorderCSS")) return;
+    const s = document.createElement("style");
+    s.id = "emojiBorderCSS";
+    s.textContent = `
+      /* Ensure emoji span renders consistently */
+      .instance-emoji {
+        display: inline-block;
+        font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","EmojiOne Color",sans-serif !important;
+        font-size: 50px !important;
+        line-height: 1.15;
+        vertical-align: middle;
+        pointer-events: none;
+      }
+
+      /* Make sure instances allow internal ambient background and visible border */
+      .instance {
+        box-sizing: border-box;
+        background-clip: padding-box; /* keep background inside the border */
+        -webkit-background-clip: padding-box;
+        border-style: solid;          /* border must be 'solid' for border-image to show */
+        padding: 0px;                /* give space for the ambient background */
+      }
+    `;
+    document.head.appendChild(s);
+  }
 
            function calculatedAverageColor(emoji)
            {
@@ -220,7 +337,15 @@
             return  EMOJIS[code];
 
           }
-
+ function getEmojiGradients(emoji) {
+    const code = emojiToUni(emoji);
+    if (!(code in EMOJIS_GRADIENTS)) {
+      const g = calculatedTopColorsGradient(emoji);
+     EMOJIS_GRADIENTS[code] = g;
+      localStorage.setItem("emojiGradients",JSON.stringify(EMOJIS_GRADIENTS));
+    }
+    return EMOJIS_GRADIENTS[code];
+  }
 
           function applyOnOneElement(node)
            {
@@ -233,7 +358,7 @@
 
 
          if(node.classList.contains("instance-discovery"))
-             {
+             {calculatedTopColorsGradient
 
              try{
 
@@ -681,17 +806,101 @@
 
                  };
                  break;
-               case 12:{
+               case 14:{
+                      //this will be movement based
+                     // need to find  the instance linked to the node keep the position in the instance
 
 
 
 
+                   let lastx=0,lasty=0;
+
+                   let updateBorderColor=()=> {
+
+
+                                                  let instances=IC.getInstances();
+                                                  let ourInstance=instances.find(x=>x.element==node);
+                                                          if(ourInstance.lx==null)
+                                            {ourInstance.lx=0;
+                                             }
+
+                                             if(ourInstance.ly==null)
+                                               {ourInstance.ly=0;
+                                               }
+                                              console.log("our instance:",ourInstance)
+                                              const rect = node.getBoundingClientRect();
+                                              if(ourInstance.ly!=0 || ourInstance.lx!=0)
+                                              {
+
+                                               const dx = rect.left - ourInstance.lx;
+                                               const dy = rect.top - ourInstance.ly;
+                                               const speed = Math.sqrt(dx*dx + dy*dy);
+                                                 if (speed < 0.1) { // Not moving → secret base color
+
+                                                node.style.borderImage     = "";
+                                                node.style.backgroundImage = "";
+                                                node.style.borderColor     = emojiAverageColor;
+                                                node.style.borderWidth     = "3px";
+                                                node.style.setProperty("--shadow-rgb",emojiAverageColor );
+
+                                                 } else { // Moving → direction + speed color
+                                                     const current = getComputedStyle(node).borderColor;
+                                                     const [r, g, b] = current.match(/\d+/g).map(Number);
+                                                     const hsl = rgbToHsl(r, g, b);
+                                                     // Movement → hue shift based on direction
+                                                     const angle = Math.atan2(dy, dx);
+                                                     const hueShift = (angle * 180 / Math.PI) /4;
+                                                     // subtle shift // Movement → brightness boost based on speed
+                                                     const lightBoost = Math.min(20, speed * 1.5);
+                                                     const newH = (hsl.h + hueShift + 360) % 360;
+                                                     const newL = Math.min(90, hsl.l*100 + lightBoost);
+                                                    let rgb= hslToRgb(newH,hsl.s,hsl.l)
+                                                     node.style.borderColor = `rgb(${rgb.r}, ${rgb.b}, ${rgb.g})`;
+                                                  }
+                                              }else
+                                              {
+                                                        node.style.borderImage     = "";
+                                                        node.style.backgroundImage = "";
+                                                        node.style.borderColor     = emojiAverageColor;
+                                                        node.style.borderWidth     = "3px";
+                                                        node.style.setProperty("--shadow-rgb",emojiAverageColor );
+
+
+                                              }
+                                               ourInstance.lx = rect.left; ourInstance.ly = rect.top; }
+                       updateBorderColor();
                  }
                  break;
-               case 13:
-                 {
+               case 15:
+                 { ensureCSS();
 
 
+     if (!emojiSpan) return;
+
+      if (!emoji) return;
+
+    const { border, ambient } = getEmojiGradients(emoji);
+
+    // Border gradient — use explicit properties for reliability
+    node.style.borderWidth = "8px";
+    node.style.borderStyle = "solid";
+    node.style.borderColor = "transparent"; // make actual color transparent so image shows
+    // border-image-source accepts a CSSGradientValue
+    node.style.borderImageSource = border;
+    node.style.borderImageSlice = "1";      // use full gradient
+    node.style.borderImageRepeat = "stretch";
+    node.style.borderImageOutset = "0";
+
+    // Ambient gradient background (semi-transparent)
+    node.style.backgroundImage = ambient;
+    node.style.backgroundBlendMode = "overlay";
+    node.style.backgroundOrigin = "padding-box";
+    node.style.backgroundClip = "padding-box";
+
+    // minor cosmetic
+    node.style.borderRadius = "0px";
+    node.style.boxShadow = "0 4px 8px rgba(0,0,0,0.5)";
+    node.style.transition = "border-image-source 300ms ease, background-image 300ms ease";
 
 
                  }
@@ -711,6 +920,9 @@
         function applyStyleOnAllElements()
           {
               let instances = document.getElementsByClassName("instance");
+               if(mode==15)
+               { ensureCSS();
+               }
              for (const node of instances)
                {   if(node.querySelector(".instance-emoji"))
                    applyOnOneElement(node);
@@ -1477,6 +1689,7 @@
             function initColors() {
 
                      EMOJIS = {};
+                     EMOJIS_GRADIENTS={};
                       console.log("init colors");
                      if(localStorage.getItem("mode_theme")!=null)
                        {
@@ -1509,6 +1722,11 @@
                       {
                           EMOJIS = JSON.parse(localStorage.getItem("emojiColors"));
                       }
+                     if( localStorage.getItem("emojiGradients")!=null)
+                      {
+                          EMOJIS_GRADIENTS = JSON.parse(localStorage.getItem("emojiGradients"));
+                      }
+
 
                        if( localStorage.getItem("FDsparkle")!=null)
 
@@ -1866,7 +2084,7 @@
               {
                  theme_settings_container.classList.add('setting');
                  theme_settings_container.classList.add("modal-tab-wrapper");
-                 theme_settings_container.setAttribute("data-v-885fff84","");
+                 theme_settings_container.setAttribute("data-v-525e958a","");
 
               }
 
@@ -1875,15 +2093,15 @@
 
 
               title.classList.add("modal-tab");
-              title.setAttribute("data-v-885fff84","");
+              title.setAttribute("data-v-525e958a","");
              var textSpacer=document.createElement("div");
              var textDiv=document.createElement("div");
               textDiv.classList.add("modal-tab-text");
              textDiv.textContent="Theme Settings";
-             textDiv.setAttribute("data-v-885fff84","");
+             textDiv.setAttribute("data-v-525e958a","");
              textSpacer.textContent="/";
              textSpacer.classList.add('spacer');
-             textSpacer.setAttribute("data-v-885fff84","");
+             textSpacer.setAttribute("data-v-525e958a","");
              theme_settings_container.appendChild(textSpacer);
              title.appendChild(textDiv);
 
@@ -1893,21 +2111,7 @@
 
 
             title.addEventListener("click",()=>{
-
-              while(parentElement.children[1].children.length>1)
-              parentElement.children[1].removeChild(parentElement.children[1].lastChild);
-              if(parentElement.children[1].lastChild && parentElement.children[1].lastChild.style)
-                {
-                   parentElement.children[1].lastChild.style.display="none";
-                }else
-                  if(parentElement.children[1].lastChild)
-                    {
-                     parentElement.children[1].children[0].style.display="none";
-                    }
-
-
-
-
+             parentElement.children[2].style.display="none";
 
               var content=document.querySelector(".theme-content");
 
@@ -1934,13 +2138,20 @@
 
              var titleTabs=document.querySelector(".modal-tabs");
 
-              for(var tab of titleTabs.children)
+              for(let tab of titleTabs.children)
                {
 
                 if(tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent!=title.textContent)
                {
-                   tab.querySelector(".modal-tab").addEventListener("click",()=>{
 
+                   tab.querySelector(".modal-tab").addEventListener("click",()=>{
+                   if(tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Saves" ||
+                      tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Controls" ||
+                      tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="About")
+                             {
+                                      tab.querySelector(".modal-tab").classList.add("modal-tab-selected");
+                                      parentElement.children[2].style.display="block";
+                             }
                    title.classList.remove("modal-tab-selected");
                    if(parentElement.contains(content))
                      {
@@ -2039,10 +2250,15 @@
           }
 
             window.addEventListener('load', async () => {
+               let int=setInterval( ()=>{
+              if(IC)
+              {
+              clearInterval(int);
               console.log("Welcome to themes");
               injectCSS();
               initColors();
               set_up_color_settings_button();
+             }},1);
 
                 }, false);
         })();
