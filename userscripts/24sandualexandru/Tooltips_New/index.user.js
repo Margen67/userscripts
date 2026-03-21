@@ -3,8 +3,10 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://neal.fun/infinite-craft/*
 // @grant       GM_addElement
+// @grant         GM.getValue
+// @grant         GM.setValue
 // @grant       unsafeWindow
-// @version     1.2
+// @version     2
 // @author      -
 // @description 4/30/2025, 8:10:05 PM
 // @require	https://unpkg.com/wanakana
@@ -577,10 +579,206 @@ if (tokenizer) {
     console.log(`Loded tokenizer`);
 }
 else console.log('llamaTokenizer is undefined...');
+let addContextMenu=(ta)=>ta.addEventListener("mousedown", e => {
+  // Only trigger on left click
+  if (e.button === 2) {
 
 
+    const evt = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      clientX: e.clientX,
+      clientY: e.clientY
+    });
+
+    ta.dispatchEvent(evt);
+  }
+});
+let addKeyDownAction=(ta)=>ta.addEventListener("keydown",async e => {
+  if (e.ctrlKey || e.metaKey) {
+    const key = e.key.toLowerCase();
+
+    // -------------------------
+    // CTRL + C (Copy)
+    // -------------------------
+    if (key === "c") {
+      e.preventDefault();
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const selected = ta.value.substring(start, end);
+
+      try {
+        await navigator.clipboard.writeText(selected);
+      } catch (err) {
+        console.error("Clipboard write failed", err);
+      }
+      return;
+    }
+
+    // -------------------------
+    // CTRL + X (Cut)
+    // -------------------------
+    if (key === "x") {
+      e.preventDefault();
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const selected = ta.value.substring(start, end);
+
+      try {
+        await navigator.clipboard.writeText(selected);
+      } catch (err) {
+        console.error("Clipboard write failed", err);
+      }
+
+      // Remove selected text
+      ta.value = ta.value.slice(0, start) + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start;
+      return;
+    }
+
+    // -------------------------
+    // CTRL + V (Paste)
+    // -------------------------
+    if (key === "v") {
+      e.preventDefault();
+      const pasteText = await navigator.clipboard.readText();
+
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+
+      ta.value =
+        ta.value.slice(0, start) +
+        pasteText +
+        ta.value.slice(end);
+
+      ta.selectionStart = ta.selectionEnd = start + pasteText.length;
+      return;
+    }
+
+    }
 
 
+    e.preventDefault();
+    e.stopPropagation();
+    ta.focus();
+      function insert(text) {
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+
+    ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + text.length;
+    ta.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  // Prevent losing focus on weird keys like CapsLock
+  // Handle Backspace
+  if (e.key === "Backspace") {
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+
+    if (start === end && start > 0) {
+      ta.value = ta.value.slice(0, start - 1) + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start - 1;
+    } else {
+      ta.value = ta.value.slice(0, start) + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start;
+    }
+     ta.dispatchEvent(new Event("input", { bubbles: true }));
+    return;
+  }
+
+  // Handle Delete
+  if (e.key === "Delete") {
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+
+    if (start === end) {
+      ta.value = ta.value.slice(0, start) + ta.value.slice(start + 1);
+    } else {
+      ta.value = ta.value.slice(0, start) + ta.value.slice(end);
+    }
+    ta.selectionStart = ta.selectionEnd = start;
+    ta.dispatchEvent(new Event("input", { bubbles: true }));
+    return;
+  }
+
+  // Handle Enter
+  if (e.key === "Enter") {
+
+    insert("\n");
+    return;
+  }
+
+  // Handle Tab
+  if (e.key === "Tab") {
+
+    insert("    "); // 4 spaces or "\t"
+    return;
+  }
+
+  // Arrow keys, Home, End — let browser handle cursor movement
+  const navKeys = [
+    "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+    "Home", "End"
+  ];
+  if (navKeys.includes(e.key)) return;
+
+  // Ignore modifier keys
+  if (e.key.length !== 1) return;
+
+  // Insert printable characters manually
+  insert(e.key);
+
+
+},{ passive: false, capture: true });
+
+const handlerBehavior = {
+    romaji: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    charcode: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    curly: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    quotes: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    "Dead element": {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    fromcharcode: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(e, tooltips) { eval(this.code) }
+    },
+    translateToEnglish: {
+        async handle(element, tooltips) {
+            await eval(`(async () => { ${this.code} })()`)
+        },
+        condition(e) { return eval(this.conditionCode) }
+    },
+    tokenCount: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    characterslimit: {
+        condition(e) { return eval(this.conditionCode) },
+        handle(element, tooltips) { eval(this.code) }
+    },
+    custom:{
+            condition(e){ return eval(this.conditionCode) ;},
+            async handle(element, tooltips) {
+            await eval(`(async () => { ${this.code} })()`)
+        }
+      }
+};
 
     let tooltipHandlers = [{
         id: "romaji",
@@ -588,18 +786,18 @@ else console.log('llamaTokenizer is undefined...');
         priority: 1,
         description: "Translates kana into romaji whenever possible.",
         enabled: false,
-        condition: (e) => {
+        conditionCode:`
          var text=e.text;
          var truncatedtext=(text.replace( /^\s+|\s+$/g, '' ))
          const romaji= wanakana.toRomaji(truncatedtext)
          const romajiTruncated=romaji.replace( /^\s+|\s+$/g, '' );
-         return romajiTruncated !== truncatedtext
-
-        },
-
+         romajiTruncated !== truncatedtext
+         `,
+        condition(e) { return eval(this.conditionCode);},
+        code:'tooltips.push(`🇯🇵 ${wanakana.toRomaji(e.text.trim())}`)',
 
         handle(e, tooltips) {
-            tooltips.push(`🇯🇵 ${wanakana.toRomaji(e.text.trim())}`);
+            eval(`${this.code}`);
         }
     }
         , {
@@ -608,9 +806,11 @@ else console.log('llamaTokenizer is undefined...');
         priority: 0,
         description: "Displays the UTF-16 code of the character.",
         enabled: false,
-        condition: (e) => Array.from(e.text.trim()).length === 1,
+        conditionCode:'Array.from(e.text.trim()).length === 1',
+        condition(e){return eval(`${this.conditionCode}`)},
+        code:'tooltips.push(`🔡 U+${element.text.codePointAt().toString(16).toUpperCase().padStart(4, "0")}`);',
         handle(element, tooltips) {
-            tooltips.push(`🔡 U+${element.text.codePointAt().toString(16).toUpperCase().padStart(4, "0")}`);
+              eval(`${this.code}`);
         }
     }, {
         id: "curly",
@@ -618,9 +818,11 @@ else console.log('llamaTokenizer is undefined...');
         priority: 2,
         description: "Shows whether the element includes curly quotation marks.",
         enabled: false,
-        condition: (e) => e.text.includes("“") || e.text.includes("”"),
+        conditionCode:'e.text.includes("“") || e.text.includes("”")',
+        condition(e) { return  eval(`${this.conditionCode}`);},
+        code:'tooltips.push("Curly quoted")',
         handle(element, tooltips) {
-            tooltips.push("Curly quoted")
+             eval(`${this.code}`);
         }
     },
     {
@@ -629,9 +831,11 @@ else console.log('llamaTokenizer is undefined...');
         priority: 2,
         description: "Shows whether the element includes curly quotation marks.",
         enabled: false,
-        condition: (e) => e.text.includes("\"") || e.text.includes("\'"),
+        conditionCode:`e.text.includes("\\"") || e.text.includes("\\'")`,
+        condition(e){ return eval(this.conditionCode) ;},
+        code:'tooltips.push("\\" Quoted")',
         handle(element, tooltips) {
-            tooltips.push("\" Quoted")
+             eval(`${this.code}`);
         }
     }, {
         id: "Dead element",
@@ -639,9 +843,11 @@ else console.log('llamaTokenizer is undefined...');
         priority: 2,
         description: "more than 30 characters.",
         enabled: false,
-        condition: (e) => e.text.length>30,
+        conditionCode:'e.text.length>30',
+        condition(e){ return eval(this.conditionCode);},
+        code:'tooltips.push("💀 Dead")',
         handle(element, tooltips) {
-            tooltips.push("💀 Dead")
+           eval(`${this.code}`);
         }
     },
     {
@@ -650,11 +856,12 @@ else console.log('llamaTokenizer is undefined...');
         priority: 0,
         description: "Turns UTF-6 codes to their actual character.",
         enabled: false,
-        condition: (e) => /[Uu]\+[0-9a-fA-F]+/.test(e.text),
-        handle(element, tooltips) {
-            let res = element.text,
-                replaced = false;
-            const matches = res.match(/[Uu]\+[0-9a-fA-F]+/g) ?? [];
+        conditionCode:'/[Uu]\\+[0-9a-fA-F]+/.test(e.text)',
+        condition(e){ return eval(this.conditionCode);},
+        code:`let res = element.text;
+              let replaced = false;
+              let regex=/[Uu]\\+[0-9a-fA-F]+/g
+            const matches = res.match(regex) ?? [];
             for (const match of matches) {
                 const codepoint = parseInt(match.slice(2), 16);
                 if (checkCodepoint(codepoint)) {
@@ -662,8 +869,10 @@ else console.log('llamaTokenizer is undefined...');
                     replaced = true;
                 }
             }
-            if (!replaced) return;
-            tooltips.push(`🔢 ${res}`)
+            if (replaced)
+            tooltips.push(\`🔢 \${res}\`)`,
+        handle(element, tooltips) {
+           eval(`${this.code}`);
         }
     },
     {
@@ -672,12 +881,13 @@ else console.log('llamaTokenizer is undefined...');
         priority: 0,
         description: "Translates foreign languages to english.",
         enabled: false,
-        condition: (e) => (!isNumeric(e.text) && !/[+]/.test(e.text)),
-        async handle(element, tooltips) {
-
-            var translated = await make_A_call(element.text);
+        code:`  var translated = await make_A_call(element.text);
             if (translated != "")
-                tooltips.push(`🔄 ${translated}`)
+                tooltips.push(\`🔄 \${translated}\`)`,
+        conditionCode:'(!isNumeric(e.text) && !/[\+]/.test(e.text))',
+        condition(e){ return eval(this.conditionCode) ;},
+        async handle(element, tooltips) {
+         await eval(`(async () => { ${this.code} })()`)
         }
     },
   {
@@ -686,15 +896,17 @@ else console.log('llamaTokenizer is undefined...');
         priority: 0,
         description: "Display token count",
         enabled: false,
-        condition: (e) => true,
-        handle(element, tooltips) {
-                 if(tokenizer)
+        conditionCode:'true',
+        condition(e){return eval(this.conditionCode);},
+        code:`        if(tokenizer)
              {
             var encoded=tokenizer.encode(element.text);
 
             if (encoded != null)
-                tooltips.push(`#️⃣ Tokens count: ${encoded.length-1}`)
-             }
+                tooltips.push(\`#️⃣ Tokens count: \${encoded.length-1}\`)
+             }`,
+        handle(element, tooltips) {
+         eval(this.code)
         }
     },
     {   id: "characterslimit",
@@ -702,40 +914,65 @@ else console.log('llamaTokenizer is undefined...');
         priority: 0,
         description: "Display number of character that are over limit",
         enabled: false,
-        condition: (e) => e.text.length>=25,
-        handle(element, tooltips) {
-            if(element.text.length<=30)
+        conditionCode:' e.text.length>=25',
+        condition(e){return eval(this.conditionCode)},
+        code:`        if(element.text.length<=30)
           {
-            tooltips.push(`⚠️ Number characters: ${element.text.length}`)
+            tooltips.push(\`⚠️ Number characters: \${element.text.length}\`)
           }else
             {
 
-              tooltips.push(`🚨 Number characters: ${element.text.length}`)
+              tooltips.push(\`🚨 Number characters: \${element.text.length}\`)
 
-            }
+            }`,
+        handle(element, tooltips) {
+           eval(this.code);
 
         }
     }
     ];
 
+function rebuildHandlers(saved) {
+    return saved.map(h => ({
+        ...h,
+        condition: handlerBehavior[h.id]?.condition??handlerBehavior["custom"].condition,
+        handle: handlerBehavior[h.id]?.handle??handlerBehavior["custom"].handle
+    }));
+}
 
 
-
-    async function doStuffOnNode(node) {
+    async function doStuffOnNode(node,rewrite=false) {
         console.log(node);
         let instanceWidth = node.offsetWidth;
         let instanceHeight = node.offsetHeight;
         node.style.height = instanceHeight.toString() + "px";
         node.style.width = instanceWidth.toString() + "px";
-
-        if (node.querySelector(".tooltip") == null) {//make child and place it above elment
-            let tooltip = document.createElement("div");
+        let tooltip = node.querySelector(".tooltip");
+        let itWasNull=false;
+        if(tooltip== null)
+        {   itWasNull=true;
+            tooltip = document.createElement("div");
             tooltip.classList.add("tooltip");
+            tooltip.style.position = "relative";
+
+            tooltip.style.left = "-50%";
+            tooltip.style.transform = "translateX(-50%)";
+            node.appendChild(tooltip);
+        }else
+        {  if(rewrite)
+        {
+            tooltip.innerHTML="";
+        }
+        }
+        if(itWasNull || rewrite)
+        {//make child and place it above elment
+           
             var text = node.querySelector(".instance-text").textContent;
             var height = 0;
             console.log("TEXT:" + text)
+            tooltip.innerHTML="";
             for (const t of tooltipHandlers) {
-
+                if(t.enabled) continue;
                 if (t.condition({ "text": text })) {
                     const tooltips = [];
                     await t.handle({ "text": text }, tooltips);
@@ -751,18 +988,294 @@ else console.log('llamaTokenizer is undefined...');
             }
 
             height = (height-1) *10+ 65;
-            tooltip.style.position = "relative";
             tooltip.style.top = "-" + height.toString() + "px";
-            tooltip.style.left = "-50%";
-            tooltip.style.transform = "translateX(-50%)";
-            node.appendChild(tooltip);
         }
 
     }
+function extractMethodBody(str, methodName) {
+  const startIndex = str.indexOf(methodName);
+  if (startIndex === -1) return null;
+
+  // Find the first opening brace after the method name
+  const braceStart = str.indexOf("{", startIndex);
+  if (braceStart === -1) return null;
+
+  let depth = 0;
+  let i = braceStart;
+
+  for (; i < str.length; i++) {
+    if (str[i] === "{") depth++;
+    else if (str[i] === "}") depth--;
+
+    if (depth === 0) break;
+  }
+
+  // Full body between braces
+  const body = str.slice(braceStart + 1, i).trim();
+
+  // Find the first return
+  const returnIndex = body.indexOf("return");
+  if (returnIndex === -1) return body; // no return found → return full body
+
+  // Return everything AFTER the first return
+  return body.slice(returnIndex + "return".length).trim();
+}
+    function helper(content,parentElement)
+    {                if(content==null)
+                {
+
+             content=document.createElement("div");
+             content.setAttribute("data-v-885fff84","");
+             content.classList.add("about");
+             content.addEventListener("wheel", (e) => { content.scrollTop += e.deltaY;
+                                               e.preventDefault();
+                                               e.stopImmediatePropagation();
+                                              },{ passive: false, capture: true })
+             content.style.maxHeight="300px";
+             content.style.overflowY="auto";
+             content.classList.add("tooltip-content");
+             parentElement.appendChild(content);
+                }else
+                  content.innerHTML="";
+                {
+
+
+              let AddButton=document.createElement("button");
+                    AddButton.textContent="+";
+                    AddButton.style.fontSize="30px";
+                    content.appendChild( AddButton);
+                     AddButton.addEventListener("click",()=>{
+                     let nameDiv=document.createElement("div");
+                     let inputBox=document.createElement("input");
+                     inputBox.addEventListener("keydown", e => {
+                                                                // e.preventDefault();
+                                                                 //e.stopPropagation();
+                                                              },{ passive: false, capture: true });
+                     nameDiv.appendChild(inputBox);
+                     let submitButton=document.createElement("button");
+                     submitButton.textContent="Create new tooltip with given name";
+                      nameDiv.appendChild(submitButton);
+                         submitButton.addEventListener("click",()=>{
+                             let nameT=inputBox.value;
+                             tooltipHandlers.unshift(
+      { id: nameT.toLowerCase(),
+        name: nameT,
+        priority: 0,
+        description: nameT,
+        enabled: false,
+        code:``,
+        conditionCode:'',
+        condition(e){ return eval(this.conditionCode) ;},
+        async handle(element, tooltips) {
+         await eval(`(async () => { ${this.code} })()`)
+        }
+    });
+                               helper(content,parentElement);
+                         });
+                     content.prepend(nameDiv);
+                         });
+             for(let tooltip of tooltipHandlers)
+             { let div=document.createElement("div");
+               let textP=document.createElement("p");
+               textP.textContent=tooltip.name;
+               let useTooltipInput=document.createElement("input");
+               let enableSpan=document.createElement("span");
+               useTooltipInput.type="checkbox";
+               useTooltipInput.style.opacity="1";
+               useTooltipInput.style.width="20px";
+               useTooltipInput.style.height="20px";
+               useTooltipInput.checked=!tooltip.enabled;
+               useTooltipInput.addEventListener("change",()=>{tooltip.enabled=!useTooltipInput.checked;
+                                   GM.setValue("tooltip-handlers",JSON.stringify(tooltipHandlers))
+                                                                for (var inst of instances)
+                                                                  doStuffOnNode(inst,true);
+                                                             });
+               enableSpan.textContent="Use tooltip     ";
+               enableSpan.appendChild(useTooltipInput);
+               let saveButtonCode=document.createElement("button");
+               saveButtonCode.textContent="Save code";
+               saveButtonCode.addEventListener("click",()=>{
+                 let code=extractMethodBody(codeArea.value,"handler");
+                  console.log("handler:",code);
+                  tooltipHandlers.find(t=>t.name==tooltip.name).code=code;
+                  tooltip.code=code;
+
+                   GM.setValue("tooltip-handlers",JSON.stringify(tooltipHandlers))
+               });
+               let conditionForMatchArea=document.createElement("textarea");
+               let codeArea=document.createElement("textarea");
+               let saveButtonConditionCode=document.createElement("button");
+               saveButtonConditionCode.textContent="Save condition";
+
+               saveButtonConditionCode.addEventListener("click",()=>{
+                   var instances = document.querySelectorAll(".instance");
+               let code= extractMethodBody(conditionForMatchArea.value,"condition");
+                console.log("condition:",code);
+                   tooltipHandlers.find(t=>t.name==tooltip.name).conditionCode=code;
+                       for (let  inst of instances)
+                            doStuffOnNode(inst,true);
+               GM.setValue("tooltip-handlers",JSON.stringify(tooltipHandlers));
+
+               });
+               let contentTooltip=document.createElement("div");
+               let labelCode=document.createElement("p");
+               let labelMatchCode=document.createElement("p");
+              
+               labelMatchCode.textContent="Code used for matching";
+               labelCode.textContent="Code to execute on match";
+             
+              codeArea.textContent="handler(element, tooltips){"+tooltip.code+"}";
+              codeArea.style.minWidth="600px";
+              codeArea.style.minHeight="150px";
+              conditionForMatchArea.style.minWidth="600px";
+              conditionForMatchArea.style.minHeight="150px";
+              conditionForMatchArea.textContent="condition(e){ return "+tooltip.conditionCode+"}"
+              contentTooltip.appendChild( textP);
+              contentTooltip.appendChild( enableSpan);
+              contentTooltip.appendChild( labelMatchCode);
+              contentTooltip.appendChild( saveButtonConditionCode);
+              contentTooltip.appendChild(document.createElement("br"));
+              contentTooltip.appendChild( conditionForMatchArea);
+              contentTooltip.appendChild( labelCode);
+              contentTooltip.appendChild( saveButtonCode);
+              contentTooltip.appendChild(document.createElement("br"));
+              contentTooltip.appendChild( codeArea);
+              content.appendChild(contentTooltip);
+              let ta = codeArea
+
+addContextMenu(codeArea)
+addContextMenu(conditionForMatchArea)
+addKeyDownAction(codeArea)
+addKeyDownAction(conditionForMatchArea)
+
+              codeArea.addEventListener("input",()=>{
+      
+              })
+              conditionForMatchArea.addEventListener("input",()=>{
+                
+
+              })
+             }
+
+
+                }
+    }
+          function set_up_tooltip_settings_button()
+          {
+
+              let menu=document.querySelector(".menu");
+           
+              menu.addEventListener("click",()=>
+                                   {
+                                    let interval=setInterval(
+                                     ()=>{
+
+                let settings                 = document.querySelector(".modal-tabs");
+                    if(settings==null)
+                           return;
+
+            clearInterval(interval);
+
+            let theme_settings_container = document.createElement("div");
+            console.log("seetings",settings);
+
+
+            if(settings==null)
+              {
+
+
+                 settings                                = document.querySelector(".container");
+                 theme_settings_container.style.position = 'absolute';
+                 theme_settings_container.style.left     = '20px';
+                 theme_settings_container.style.top      = '100px';
+                 theme_settings_container.style.width    = '50px';
+                 theme_settings_container.style.height   = '50px';
+
+                 theme_settings_container.classList.add('tooltip_settings_cont');
 
 
 
+              }
+             else
+              {
+                 theme_settings_container.classList.add('setting');
+                 theme_settings_container.classList.add("modal-tab-wrapper");
+                 theme_settings_container.setAttribute("data-v-525e958a","");
 
+              }
+
+
+             var title=document.createElement("div");
+
+
+              title.classList.add("modal-tab");
+              title.setAttribute("data-v-525e958a","");
+             var textSpacer=document.createElement("div");
+             var textDiv=document.createElement("div");
+              textDiv.classList.add("modal-tab-text");
+             textDiv.textContent="Tooltip Settings";
+             textDiv.setAttribute("data-v-525e958a","");
+             textSpacer.textContent="/";
+             textSpacer.classList.add('spacer');
+             textSpacer.setAttribute("data-v-525e958a","");
+             theme_settings_container.appendChild(textSpacer);
+             title.appendChild(textDiv);
+
+            theme_settings_container.appendChild(title);
+            settings.appendChild(theme_settings_container);
+            var parentElement=document.querySelector(".modal");
+
+             parentElement.style.maxWidth = "900px";
+              parentElement.style.maxHeight = "420px";
+            parentElement.style.overflowY="hidden";
+            title.addEventListener("click",()=>{
+
+             parentElement.children[2].style.display="none";
+
+              var content=document.querySelector(".tooltip-content");
+
+             helper(content,parentElement);
+
+
+             var selected=document.querySelectorAll(".modal-tab-selected");
+              selected.forEach(x=>x.classList.remove("modal-tab-selected"));
+
+               title.classList.add("modal-tab-selected");
+
+             var titleTabs=document.querySelector(".modal-tabs");
+
+              for(let tab of titleTabs.children)
+               {
+
+                if(tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent!=title.textContent)
+               {
+
+                   tab.querySelector(".modal-tab").addEventListener("click",()=>{
+                   if(tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Saves" ||
+                      tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="Controls" ||
+                      tab.querySelector(".modal-tab").querySelector(".modal-tab-text").textContent.trim()=="About")
+                             {
+                                      tab.querySelector(".modal-tab").classList.add("modal-tab-selected");
+                                      parentElement.children[2].style.display="block";
+
+                             }
+                   title.classList.remove("modal-tab-selected");
+                   if(parentElement.contains(document.querySelector(".tooltip-content")))
+                     {
+                       parentElement.removeChild(document.querySelector(".tooltip-content"));
+                     }
+                 })
+               }
+
+
+             }
+
+
+          }
+
+                                   )},100)
+                                    })
+          }
 
     async function doStuffOnInstancesMutation(mutations) {
         for (const mutation of mutations) {
@@ -779,10 +1292,11 @@ else console.log('llamaTokenizer is undefined...');
         }
     }
 
-    window.addEventListener("load", () => {
-
-
-
+    window.addEventListener("load", async() => {
+     if(await GM.getValue("tooltip-handlers"))
+      tooltipHandlers=JSON.parse(await GM.getValue("tooltip-handlers"));
+      tooltipHandlers= rebuildHandlers(tooltipHandlers);
+      set_up_tooltip_settings_button();
 
 
 
@@ -803,7 +1317,7 @@ else console.log('llamaTokenizer is undefined...');
         // do at startup om all instances
         var instances = document.querySelectorAll(".instance");
         for (var inst of instances)
-            doStuffOnNode(inst);
+            doStuffOnNode(inst,true);
 
 
 

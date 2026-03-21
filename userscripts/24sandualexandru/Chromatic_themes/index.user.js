@@ -1,16 +1,15 @@
-
 // ==UserScript==
-       // @name        Chromatic Themes Changing Colors and Sparkles v400+
-       // @namespace   Violentmonkey Scripts
-       // @match       https://neal.fun/infinite-craft/*
-       // @grant       unsafeWindow
-       // @run-at	document-end
-       // @require 	https://unpkg.com/wanakana
-       // @require https://raw.githubusercontent.com/surferseo/intl-segmenter-polyfill/master/dist/bundled.js
-       // @version     1.0
-       // @author      Alexander_Andercou
-       // @description 4/29/2024, 7:40:08 AM
-       // ==/UserScript==
+// @name        Chromatic Themes Changing Colors and Sparkles v400+
+// @namespace   Violentmonkey Scripts
+// @match       https://neal.fun/infinite-craft/*
+// @grant       unsafeWindow
+// @run-at	document-end
+// @require 	https://unpkg.com/wanakana
+// @require https://raw.githubusercontent.com/surferseo/intl-segmenter-polyfill/master/dist/bundled.js
+// @version     1.0
+// @author      Alexander_Andercou
+// @description 4/29/2024, 7:40:08 AM
+// ==/UserScript==
       (function() {
         var EMOJIS      = {}
         var EMOJIS_GRADIENTS      = {}
